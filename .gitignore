@@ -23,3 +23,7 @@ dist/
 *.egg-info/
 .coverage
 htmlcov/
+# ngrok agent config may contain authtoken
+ngrok.yml
+*.ngrok.yml
+.ngrok/

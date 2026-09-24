@@ -2,7 +2,7 @@
 
 > **這份文件在開發電腦維護；實際安裝請到 24 小時正式電腦再執行【C】。**  
 > **禁止修改 SmartRx。** 本系統獨立於 SmartRx。  
-> **本階段不設定**外部連線（網域／Cloudflare／Tailscale／Port Forward／DDNS）。
+> **對外連線只用 ngrok → FastAPI :8800。** 不要 Port Forward／Cloudflare Tunnel／Tailscale／VPN／DDNS。
 
 ---
 
@@ -12,7 +12,7 @@
 |------|------|
 | 帳號＋密碼登入後直接打卡 | 完成 |
 | GPS／Wi-Fi／QR／NFC／Beacon | 未使用／已移除 |
-| 測試 | 107 passed |
+| 測試 | 見 pytest / validation 報告 |
 | Validation | ALL PASS |
 | 正式啟動腳本 | `scripts\start_production.bat` 等 |
 | 部署副本 | `D:\出勤打卡系統_deploy` |
@@ -88,33 +88,33 @@ scripts\preflight_check.bat
 
 只回報問題，**不會**改防火牆／網路／自動裝 Python。
 
-### C4. 建立正式 SECRET_KEY
+### C4. SECRET_KEY
 
-- 優先：環境變數 `ATTENDANCE_SECRET_KEY`
-- 否則：第一次啟動自動建立 `data\.secret_key`，之後沿用  
-- **不要**使用開發電腦的 `.secret_key`
+- 優先：環境變數 `SECRET_KEY` 或 `ATTENDANCE_SECRET_KEY`
+- 否則：若 `data\.secret_key` 已存在就沿用；沒有才自動建立
+- **不要**把金鑰寫進 Git
 
-### C5. 初始化正式 SQLite
+### C5. SQLite（正式資料庫）
 
 路徑：`data\attendance.sqlite3`  
-第一次執行 FastAPI 會自動建表、migration、seed。  
-**不要**覆蓋開發機的 SQLite。
-
-預設帳號（請立刻改密）：
-
-| 角色 | 帳號 | 密碼 |
-|------|------|------|
-| 管理員 | admin | admin123 |
-| 示範員工 | demo | demo123 |
+這份檔案就是正式資料。不要刪除、不要清空、不要覆蓋成空庫，不要執行 PostgreSQL migration。
 
 ### C6. 啟動 FastAPI
+
+24 小時電腦（需已設定 `CORS_ORIGINS`）：
+
+```bat
+scripts\start_production_pc.bat
+```
+
+本機開發驗證：
 
 ```bat
 scripts\start_production.bat
 ```
 
 - 綁定：`0.0.0.0:8800`
-- 本機確認：`http://127.0.0.1:8800`、`http://127.0.0.1:8800/api/health`
+- 本機確認：`http://127.0.0.1:8800`、`http://127.0.0.1:8800/health`
 
 停止：
 
@@ -122,23 +122,32 @@ scripts\start_production.bat
 scripts\stop_production.bat
 ```
 
-開機自動啟動：可用 Windows「工作排程器」在開機時執行 `scripts\start_production.bat`（細節見舊版說明段落或工作排程器 UI）。
+開機自動啟動（要你親自執行，不會自動安裝）：
+
+```bat
+scripts\install_ngrok_service.bat INSTALL
+```
 
 ---
 
-## 【D 外部連線】目前不要設定
+## 【D 外部連線】ngrok（目前正式方案）
 
-FastAPI 已支援 `0.0.0.0:8800`，但：
+手機不直接開 `http://127.0.0.1:8800`。
 
-- **`192.168.x.x:8800` 只適用於同區網測試。**
-- **4 間不同門市要正式使用，還需要另外建立「外部連線入口」。**
-- **正式門市手機要使用的網址，需要在 24 小時正式電腦完成外部連線設定後才能確定。**
+```
+GitHub Pages  --HTTPS-->  ngrok  --tunnel-->  127.0.0.1:8800  -->  SQLite
+```
 
-本文件**不**決定要用哪一種外部方案。請待之後另行指示。
+- 不要 Port Forward、VPN、Cloudflare Tunnel、Tailscale、DDNS。
+- 不要把區網 IP 當成門市正式網址。
+- 安裝與開機啟動見 `docs/NgrokSetup.md`。
+- **不要刪除或重建** `data\attendance.sqlite3`。它就是正式資料庫。
+- **不要**執行 PostgreSQL migration。
 
-因此：
+### C5 更正
 
-> **目前還不能直接給 4 間門市手機使用，因為外部連線入口尚未設定。**
+若 `data\attendance.sqlite3` 已存在，啟動時沿用，不要覆蓋、不要清空。  
+第一次在空目錄啟動才會建表；那不是把現有正式庫換掉。
 
 ---
 

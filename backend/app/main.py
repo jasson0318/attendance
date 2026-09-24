@@ -33,7 +33,16 @@ logging.basicConfig(
 )
 logger = logging.getLogger("attendance")
 
-app = FastAPI(title="出勤打卡系統", description="Attendance System", version="1.0.0")
+_is_production = APP_ENV in ("production", "prod")
+# production 不公開 Swagger / ReDoc / OpenAPI；development 維持 /docs
+app = FastAPI(
+    title="出勤打卡系統",
+    description="Attendance System",
+    version="1.0.0",
+    docs_url=None if _is_production else "/docs",
+    redoc_url=None if _is_production else "/redoc",
+    openapi_url=None if _is_production else "/openapi.json",
+)
 
 app.add_middleware(
     CORSMiddleware,
@@ -80,7 +89,10 @@ def index():
     index_path = FRONTEND / "index.html"
     if index_path.exists():
         return FileResponse(index_path)
-    return {"message": "出勤打卡系統 API", "docs": "/docs"}
+    payload = {"message": "出勤打卡系統 API"}
+    if not _is_production:
+        payload["docs"] = "/docs"
+    return payload
 
 
 @app.get("/admin")

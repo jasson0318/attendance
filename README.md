@@ -2,20 +2,36 @@
 
 公司內部員工出勤管理與手機打卡系統（PWA / Mobile Web）。
 
+## 目前正式架構
+
+```
+員工 / Admin 瀏覽器
+        ↓ HTTPS
+GitHub Pages（/attendance/）
+        ↓
+ngrok HTTPS
+        ↓
+24 小時 Windows 電腦 FastAPI :8800
+        ↓
+SQLite  data\attendance.sqlite3
+```
+
+本機開發仍然是 `http://127.0.0.1:8800`（`API_BASE` 為空，走同源 `/api`）。
+
+說明：
+
+- [docs/NgrokProduction.md](docs/NgrokProduction.md)
+- [docs/NgrokSetup.md](docs/NgrokSetup.md)
+- [docs/NgrokE2ETest.md](docs/NgrokE2ETest.md)
+- [docs/EnvironmentVariables.md](docs/EnvironmentVariables.md)
+
+Cloud PostgreSQL / Cloud FastAPI 只留在 [docs/CloudMigration.md](docs/CloudMigration.md) 當備用，**不是**現在的 production。不要執行 SQLite → PostgreSQL。
+
 ## 環境需求
 
 - Windows
 - Python 3.12+
-
-正式／雲端規劃：
-
-- [docs/CloudMigration.md](docs/CloudMigration.md)
-- [docs/EnvironmentVariables.md](docs/EnvironmentVariables.md)
-- [docs/ProductionDeployment.md](docs/ProductionDeployment.md)
-- [docs/DeploymentManifest.md](docs/DeploymentManifest.md)
-
-開發電腦上的乾淨部署副本：`D:\出勤打卡系統_deploy`  
-（以 `scripts\build_deploy_copy.bat` 產生；不含開發 SQLite／SECRET）
+- 正式對外：ngrok（authtoken 存在 ngrok 自己的設定，不進 Git）
 
 ## 安裝
 
@@ -52,12 +68,11 @@ scripts\stop_production.bat
 ```
 
 - 綁定：`0.0.0.0:8800`
-- 本機：`http://127.0.0.1:8800`
-- API 文件：`http://127.0.0.1:8800/docs`
-- 管理後台：`http://127.0.0.1:8800/admin`
+- 本機開發：`http://127.0.0.1:8800`
+- 管理後台（本機）：`http://127.0.0.1:8800/admin`
+- 開發環境 API 文件：`http://127.0.0.1:8800/docs`（`APP_ENV=production` 時關閉）
 
-> 區網 IP（例如 `192.168.x.x:8800`）僅供同網段測試，**不是** 4 間門市的正式登入網址。  
-> **正式門市手機要使用的網址，需要在 24 小時正式電腦完成外部連線設定後才能確定。**
+正式手機入口是 GitHub Pages，不是區網 IP。API 位址由 GitHub Secret `ATTENDANCE_API_BASE` 注入（ngrok `https://`）。
 
 ## 預設帳號
 
@@ -79,7 +94,8 @@ JWT 簽章金鑰：
 
 ## 資料庫
 
-獨立 SQLite：`data\attendance.sqlite3`  
+正式資料庫就是 SQLite：`data\attendance.sqlite3`  
+不要刪除、不要清空、不要改成 PostgreSQL 雙寫。  
 不與其他系統（含 SmartRx）共用。
 
 ## 測試

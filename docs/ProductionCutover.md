@@ -1,42 +1,34 @@
 # Production Cutover Checklist
 
-**現況**：程式與工具已 Cloud-ready；正式切換需人工帳號／付款／credentials。  
-未完成外部步驟前，**不得**宣告 PRODUCTION READY。
+**目前正式路線：GitHub Pages + ngrok + 24 小時電腦 FastAPI + SQLite。**  
+見 `docs/NgrokProduction.md`、`docs/NgrokSetup.md`、`docs/NgrokE2ETest.md`。
 
-## 人工步驟（明天）
+不要建立 Cloud PostgreSQL，不要執行 SQLite → PostgreSQL `--confirm`。
 
-1. 建立／登入 **GitHub** 帳號；建立 repo（建議名 `attendance` 以得到 `/attendance/` 路徑，或調整 Pages base）。
-2. 將本專案 push 到 `main`（確認 `.gitignore` 已排除 `.env`／sqlite／secret）。
-3. Repo Settings → Pages → Source = **GitHub Actions**；執行 `Deploy GitHub Pages` workflow。
-4. 設定 repo secret：`ATTENDANCE_API_BASE` = 正式 Cloud API 根網址（取得後再填）。
-5. 選擇 Cloud 主機（如 Railway／Render／Fly 等）並建立帳號／Billing（若需要）。
-6. 建立 **Cloud PostgreSQL**；取得 `DATABASE_URL`。
-7. 設定 Cloud 環境變數：
-   - `APP_ENV=production`
-   - `DATABASE_URL=<postgres>`
-   - `SECRET_KEY=<強隨機>`
-   - `CORS_ORIGINS=https://<github-user>.github.io`
-   - `APP_TIMEZONE=Asia/Taipei`
-   - `IDLE_TIMEOUT_MINUTES=3`
-   - `PREVIEW_STORE=postgres`（多實例）
-   - `PORT` 由平台注入
-8. 部署 API：`python scripts/start_cloud.py` 或 `Procfile`。
-9. `alembic upgrade head`（或首次啟動 create_all）。
-10. 遷移資料（來源 SQLite **唯讀、不刪**）：
-    ```bash
-    python scripts/migrate_sqlite_to_postgres.py --dry-run --postgres-url "..."
-    python scripts/migrate_sqlite_to_postgres.py --confirm --postgres-url "..."
-    ```
-11. 驗證：`/health`、login、打卡流程、Admin、Excel、idle。
-12. 更新 Pages `ATTENDANCE_API_BASE` 並重新 deploy。
-13. 公司 24h 電腦：只用瀏覽器開 Pages Admin；**不要**對外開 8800／Port Forward／VPN／Tunnel。
+## 現在要做的人工步驟
+
+1. GitHub 建立 repository（名稱若用 `attendance`，Pages 路徑為 `/attendance/`）。不要猜測帳號。
+2. 設定 remote 並 push（本地目前分支是 `master`；遠端若用 `main`，可 `git push -u origin master:main`）。
+3. Repo → Settings → Pages → Source = GitHub Actions。
+4. 24 小時電腦安裝 ngrok、`ngrok config add-authtoken`（token 不進 Git）。
+5. 啟動 FastAPI 與 `scripts\start_ngrok.bat`，取得 `https://...`。
+6. GitHub Secret `ATTENDANCE_API_BASE` = 該 https 根網址。
+7. Secret 設好後再跑 Deploy Pages。ngrok URL 一變就要更新 Secret 並重新 deploy。
+8. 24 小時電腦設定 `CORS_ORIGINS=https://<github-account>.github.io`（不要 `*`）與 `APP_ENV=production`。
+9. 手機 4G/5G 依 `docs/NgrokE2ETest.md` 測試。
+
+## 備用（不要現在做）
+
+Cloud FastAPI、Cloud PostgreSQL、Alembic 上雲、`migrate_sqlite_to_postgres.py --confirm` 都不是目前 production。相關程式留在 repo 裡，但不要執行。
+
 
 ## Rollback
 
-- 保留 `data/attendance.sqlite3` 與 `D:\出勤打卡系統_phase1_backup`
-- 保留 migration 腳本與先前 Git commit
-- Cloud 出問題：**不要刪** production DB；可暫時指回本機開發環境
+- 保留 `data\attendance.sqlite3` 與 `D:\出勤打卡系統_phase1_backup`
+- 不要刪除正式 SQLite
+- ngrok 或 Pages 出問題時，24 小時電腦上的 FastAPI + SQLite 仍是資料來源
 
-## Source of truth（正式後）
+## Source of truth
 
-PostgreSQL only。禁止 SQLite↔PG 雙寫。
+SQLite：`D:\出勤打卡系統\data\attendance.sqlite3`  
+不要 SQLite 與 PostgreSQL 雙寫。

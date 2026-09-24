@@ -44,6 +44,37 @@ def test_prepare_pages_script_exists():
     assert (ROOT / ".github" / "workflows" / "deploy-pages.yml").exists()
 
 
+def test_prepare_api_base_requires_https():
+    import importlib.util
+
+    import pytest
+
+    path = ROOT / "scripts" / "prepare_github_pages.py"
+    spec = importlib.util.spec_from_file_location("prepare_github_pages", path)
+    mod = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(mod)
+
+    assert mod.normalize_api_base("") == ""
+    assert mod.normalize_api_base("https://example.ngrok-free.app/") == "https://example.ngrok-free.app"
+    with pytest.raises(SystemExit):
+        mod.normalize_api_base("http://example.ngrok-free.app")
+    with pytest.raises(SystemExit):
+        mod.normalize_api_base("https://<NGROK_PUBLIC_DOMAIN>")
+
+
+def test_production_disables_openapi_docs():
+    text = (ROOT / "backend" / "app" / "main.py").read_text(encoding="utf-8")
+    assert 'docs_url=None if _is_production else "/docs"' in text
+    assert 'openapi_url=None if _is_production else "/openapi.json"' in text
+
+
+def test_runtime_config_alias_supported():
+    cfg = (FRONTEND / "static" / "js" / "config.js").read_text(encoding="utf-8")
+    assert "ATTENDANCE_CONFIG" in cfg
+    wf = (ROOT / ".github" / "workflows" / "deploy-pages.yml").read_text(encoding="utf-8")
+    assert "ATTENDANCE_API_BASE" in wf
+
+
 def test_health_endpoint():
     from fastapi.testclient import TestClient
     from backend.app.main import app
@@ -54,4 +85,5 @@ def test_health_endpoint():
     body = r.json()
     assert body.get("status") == "ok"
     assert "DATABASE_URL" not in str(body)
-    assert "SECRET" not in str(body).upper() or "SECRET_KEY" not in str(body)
+    assert "SECRET_KEY" not in str(body)
+    assert c.get("/docs").status_code == 200

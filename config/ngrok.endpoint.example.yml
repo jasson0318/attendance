@@ -1,0 +1,8 @@
+# 範例：合併到 ngrok 自己的設定檔（通常在 %LOCALAPPDATA%\ngrok\ngrok.yml）。
+# 不要把 authtoken 寫進這個檔案，也不要 commit 含 authtoken 的 ngrok.yml。
+# 固定網域（付費方案）才需要 url；Free 測試可省略 url，或改用 scripts\start_ngrok.bat。
+version: 3
+endpoints:
+  - name: attendance
+    upstream:
+      url: http://127.0.0.1:8800

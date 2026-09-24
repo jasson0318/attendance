@@ -28,7 +28,7 @@ jobs:
 
       - name: Prepare static site
         env:
-          # Repository secret（可選）：正式 Cloud API 根網址，不含密鑰
+          # Repository secret：ngrok 公開 HTTPS 根網址（https://...）。勿寫進 repo。
           ATTENDANCE_API_BASE: ${{ secrets.ATTENDANCE_API_BASE }}
         run: |
           python scripts/prepare_github_pages.py --out .pages-dist --base-path /attendance

@@ -5,23 +5,25 @@
 | 變數 | 必填 | 預設 | 說明 |
 |------|------|------|------|
 | `APP_ENV` | 正式必填 | `development` | `production` 時必須提供 `SECRET_KEY`。 |
-| `DATABASE_URL` | 否 | 本機 SQLite | 正式改 `postgresql+psycopg2://...` |
+| `DATABASE_URL` | 否 | 本機 SQLite | **目前正式庫就是預設 SQLite**。不要為了上線改成 PostgreSQL。 |
 | `SECRET_KEY` | 正式必填 | （開發自動） | JWT 簽章。 |
 | `ATTENDANCE_SECRET_KEY` | 否 | — | 同 `SECRET_KEY`（舊名）。 |
-| `CORS_ORIGINS` | 否 | `http://127.0.0.1:8800,http://localhost:8800` | 逗號分隔；**禁止 `*`**。正式加 `https://<user>.github.io` |
+| `CORS_ORIGINS` | 正式建議設定 | `http://127.0.0.1:8800,http://localhost:8800` | 瀏覽器來源。正式改為 `https://<github-account>.github.io`。**禁止 `*`**。ngrok 網域不是頁面 Origin。 |
 | `ACCESS_TOKEN_EXPIRE_MINUTES` | 否 | `10080` | JWT `exp`。 |
 | `IDLE_TIMEOUT_MINUTES` | 否 | `3` | 前後端閒置逾時。 |
 | `APP_TIMEZONE` | 否 | `Asia/Taipei` | 業務時區。 |
 | `HOST` | 否 | `0.0.0.0` | bind。 |
-| `PORT` | 否 | `8800` | Cloud 用平台 `$PORT`。 |
-| `PREVIEW_STORE` | 否 | `memory` | `memory` 或 `postgres`（多實例 Excel 預覽）。 |
-| `ATTENDANCE_API_BASE` | Pages 正式 | （空） | 僅 GitHub Actions／prepare 腳本寫入前端 `API_BASE`（非密鑰）。 |
-| `POSTGRES_URL` | 遷移用 | — | `migrate_sqlite_to_postgres.py` 目標（可與 `DATABASE_URL` 相同）。 |
+| `PORT` | 否 | `8800` | 本機與 24 小時電腦用 8800。 |
+| `PREVIEW_STORE` | 否 | `memory` | 目前單機用 `memory`。 |
+| `ATTENDANCE_API_BASE` | Pages 正式 | （空） | GitHub Actions 寫入前端的 **ngrok HTTPS** 根網址。必須 `https://`。不要寫進 repo。 |
+
+`POSTGRES_URL` 只給備用遷移工具。目前不要設定、不要執行 `--confirm`。
+
 
 ## 前端
 
-- `frontend/static/js/config.js`：開發 `API_BASE=""`
-- Pages：`config.runtime.js` 由 `prepare_github_pages.py` 產生（可含公網 API 根網址，**不可**含 SECRET／DB）
+- `frontend/static/js/config.js`：開發 `API_BASE=""`（同源 `http://127.0.0.1:8800`）
+- Pages：`config.runtime.js` 由 GitHub Secret `ATTENDANCE_API_BASE` 產生，指向 ngrok `https://`。不可含 SECRET／DB。
 
 ## 安全
 

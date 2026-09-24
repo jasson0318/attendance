@@ -24,50 +24,33 @@
 | `pytest.ini` | 測試設定（正式機可選，建議一併帶走驗證） |
 | `README.md` | 專案說明 |
 | `.gitignore` | 避免之後誤提交敏感檔 |
-| `data\.gitkeep` | 確保 `data\` 目錄結構存在（**不含**正式資料） |
+| `data\.gitkeep` | 確保 `data\` 目錄結構存在 |
+| `data\attendance.sqlite3` | **正式資料庫。複製到 24 小時電腦時保留，不要進 Git** |
 
 ---
 
-## 2. 不可複製
+## 2. 不要覆蓋正式資料庫
 
-下列為開發產物或機敏／環境相依資料，**不要**從開發電腦帶進正式機：
+`data\attendance.sqlite3` **就是目前正式資料**。  
+搬到 24 小時電腦時要帶上這份檔案，不要刪除、不要清空、不要用空庫覆蓋。
+
+不要放進 Git。
 
 | 路徑 | 原因 |
 |------|------|
-| **`data\attendance.sqlite3`** | **正式 SQLite，不可沿用開發庫**（正式機首次啟動自行初始化） |
-| **`data\.secret_key`** | **正式 SECRET_KEY，不可沿用開發金鑰** |
 | `__pycache__\` | Python 快取 |
 | `.pytest_cache\` | 測試快取 |
-| `.venv\` / `venv\` | 虛擬環境（應在正式機重裝套件） |
-| `node_modules\` | 本專案不需要（若誤產生也不要複製） |
-| `*.pyc` / `*.pid` / log / 暫存檔 | 執行產物 |
-| 開發測試用附件／照片 | 非執行必要 |
+| `.venv\` / `venv\` | 虛擬環境（在正式機重裝套件） |
+| `ngrok.yml` / authtoken | 只放在 ngrok 自己的設定 |
+| `.env` | 機密 |
 
----
+`data\.secret_key` 不要提交 Git。若 24 小時電腦是新機器且未複製此檔，第一次啟動會產生新的 JWT 金鑰；既有帳號密碼仍在 SQLite 裡，員工重新登入即可。
 
-## 3. 正式電腦第一次啟動時產生
+## 3. 不要做的事
 
-| 路徑 | 說明 |
-|------|------|
-| `data\`（若不存在） | 啟動時建立 |
-| `data\attendance.sqlite3` | create_all + migration + seed |
-| `data\.secret_key` | 若未設 `ATTENDANCE_SECRET_KEY` 則自動建立並之後沿用 |
-
----
-
-## 4. 正式電腦不能沿用開發電腦資料
-
-特別標記：
-
-| 檔案 | 規則 |
-|------|------|
-| `data\attendance.sqlite3` | **→ 不複製**；正式機獨立初始化 |
-| `data\.secret_key` | **→ 不複製**；正式機獨立產生或設環境變數 |
-
-若誤把開發機 SQLite／金鑰覆蓋到正式機：
-
-- 可能混入測試打卡資料  
-- JWT 簽章與開發機相同，不利隔離  
+- 不要執行 `migrate_sqlite_to_postgres.py --confirm`
+- 不要把 Cloud PostgreSQL 當成目前正式庫
+- 對外只開 ngrok → `127.0.0.1:8800`，見 `docs\NgrokProduction.md`
 
 ---
 

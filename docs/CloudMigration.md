@@ -1,7 +1,21 @@
-# Cloud Migration Notes
+# Cloud Migration Notes（備用，不是目前正式架構）
 
-由「本機 FastAPI + SQLite」邁向  
-「GitHub Pages + Cloud FastAPI + PostgreSQL」。
+**目前正式架構已改為：GitHub Pages + ngrok + 24 小時 Windows FastAPI + SQLite。**  
+見 `docs/NgrokProduction.md`。
+
+下面的 Cloud FastAPI / PostgreSQL / Neon / Railway / Render 內容只留作未來備用。  
+不要把它當成現在的 production，也不要執行 `migrate_sqlite_to_postgres.py --confirm`。
+
+正式資料庫維持：
+
+```text
+D:\出勤打卡系統\data\attendance.sqlite3
+```
+
+---
+
+## 以下為先前 Cloud 路線備忘（非現行 production）
+
 
 | Phase | 狀態 |
 |-------|------|

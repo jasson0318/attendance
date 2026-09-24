@@ -47,6 +47,7 @@ echo.
 echo 管理後台:
 echo   http://127.0.0.1:8800/admin
 echo.
+echo 【正式】手機用 GitHub Pages；API 經 ngrok HTTPS 回到本機 :8800。見 docs\NgrokProduction.md
 echo 【注意】區網 IP（例如 192.168.x.x:8800）僅供同網段測試，
 echo         不是 4 間門市手機的正式登入網址。
 echo         正式門市手機要使用的網址，需在 24 小時正式電腦

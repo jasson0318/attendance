@@ -3,7 +3,8 @@
  *
  * API_BASE：
  *   - 開發（FastAPI 同源提供靜態頁）："" → 請求相對路徑 /api/...
- *   - GitHub Pages：設成 Cloud API 根網址（部署時由 prepare 腳本寫入，勿放密鑰）
+ *   - GitHub Pages：由 GitHub Secret ATTENDANCE_API_BASE 注入
+ *     （ngrok 公開 HTTPS，例如 https://<domain>）。勿在此寫死網域。
  *
  * BASE_PATH：
  *   - 本機 FastAPI："" （網址為 / 與 /admin）
@@ -12,7 +13,14 @@
  * 切勿放置 SECRET_KEY、DATABASE_URL、密碼。
  */
 (function (global) {
+  var injected = global.ATTENDANCE_CONFIG || {};
   var cfg = global.AttendanceConfig || {};
+  if (typeof cfg.API_BASE !== "string" && typeof injected.API_BASE === "string") {
+    cfg.API_BASE = injected.API_BASE;
+  }
+  if (typeof cfg.BASE_PATH !== "string" && typeof injected.BASE_PATH === "string") {
+    cfg.BASE_PATH = injected.BASE_PATH;
+  }
 
   function detectBasePath() {
     if (typeof cfg.BASE_PATH === "string" && cfg.BASE_PATH.length) {
@@ -48,7 +56,7 @@
   cfg.apiUrl = function (path) {
     var p = path || "";
     if (p.charAt(0) !== "/") p = "/" + p;
-    // 有 API_BASE（跨域 Cloud）時走絕對 API；否則同源相對 /api
+    // 有 API_BASE（GitHub Pages → ngrok HTTPS）時走絕對 API；否則同源相對 /api
     return (cfg.API_BASE || "") + p;
   };
 
