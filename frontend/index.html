@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#0f4c5c" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="出勤打卡系統" />
+  <!-- 相對路徑：支援本機 / 與 GitHub Pages /attendance/ -->
+  <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="apple-touch-icon" href="static/icons/icon-192.png" />
+  <link rel="stylesheet" href="static/css/app.css?v=10" />
+  <title>出勤打卡系統</title>
+</head>
+<body>
+  <div id="app">
+    <section id="login-view" class="view">
+      <div class="login-wrap">
+        <h1 class="brand">出勤打卡系統</h1>
+        <p class="sub">Attendance System</p>
+        <form id="login-form" autocomplete="on">
+          <label>帳號<input id="username" name="username" autocomplete="username" required /></label>
+          <label>密碼<input id="password" name="password" type="password" autocomplete="current-password" required /></label>
+          <label class="remember-row">
+            <input type="checkbox" id="remember-credentials" />
+            <span>記住帳密</span>
+          </label>
+          <button type="submit" class="btn primary">登入</button>
+          <p id="login-error" class="error"></p>
+          <p id="login-notice" class="msg warn hidden"></p>
+        </form>
+        <p class="hint">可將此網站加入主畫面，像 App 一樣使用</p>
+      </div>
+    </section>
+
+    <section id="punch-view" class="view hidden">
+      <header class="top">
+        <div>
+          <div class="brand-sm">出勤打卡系統</div>
+          <div id="user-label" class="muted"></div>
+        </div>
+        <div class="top-right">
+          <div id="idle-countdown" class="idle-countdown" aria-live="polite" hidden>
+            <span class="idle-countdown-icon">🕒</span>
+            <span class="idle-countdown-label">自動登出</span>
+            <span class="idle-countdown-time">03:00</span>
+          </div>
+          <button id="logout-btn" class="btn ghost">登出</button>
+        </div>
+      </header>
+
+      <section class="today-section" aria-labelledby="today-heading">
+        <h2 id="today-heading" class="today-title">今日出勤</h2>
+        <div class="card-plain">
+          <div class="date" id="today-date"></div>
+          <div class="sched" id="schedule-box">載入中…</div>
+          <div class="break-line" id="break-box"></div>
+          <div class="status-line" id="status-box"></div>
+        </div>
+      </section>
+
+      <div class="punch-grid" id="punch-buttons"></div>
+      <div id="punch-msg" class="msg"></div>
+      <div class="actions-row">
+        <button id="makeup-btn" class="btn secondary">補打卡</button>
+        <a id="admin-link" class="btn ghost hidden" data-nav="admin" href="/admin">管理後台</a>
+      </div>
+
+      <div id="unscheduled-panel" class="makeup hidden">
+        <h3>今日無排班，請說明出勤原因</h3>
+        <label>實際打卡店舖
+          <select id="unscheduled-store"></select>
+        </label>
+        <label>今日無排班出勤原因
+          <textarea id="unscheduled-reason" rows="4" placeholder="例如：支援其他門市"></textarea>
+        </label>
+        <button id="unscheduled-submit" class="btn primary">確認並上班打卡</button>
+        <button id="unscheduled-cancel" class="btn ghost" type="button">取消</button>
+      </div>
+
+      <div id="makeup-panel" class="makeup hidden">
+        <h3>補打卡</h3>
+        <label>補打卡日期<input type="date" id="makeup-date" /></label>
+        <label>選擇打卡項目
+          <select id="makeup-type">
+            <option value="START">上班打卡</option>
+            <option value="BREAK_START">開始休息</option>
+            <option value="BREAK_END">結束休息</option>
+            <option value="END">下班打卡</option>
+          </select>
+        </label>
+        <label>補打卡時間（該事件實際應打卡時間）<input type="time" id="makeup-time" /></label>
+        <label>補打卡原因／備註
+          <textarea id="makeup-reason" rows="4" placeholder="例如：今天上班時忘記打卡" required></textarea>
+        </label>
+        <button id="makeup-submit" class="btn primary">送出補打卡</button>
+        <p id="makeup-quota" class="muted"></p>
+      </div>
+    </section>
+  </div>
+
+  <div id="confirm-modal" class="modal hidden" aria-hidden="true">
+    <div class="modal-backdrop" id="confirm-backdrop"></div>
+    <div class="modal-box" role="dialog" aria-modal="true">
+      <p id="confirm-text" class="modal-text">確認要進行打卡嗎？</p>
+      <p id="confirm-time" class="confirm-time muted"></p>
+      <p id="confirm-schedule" class="confirm-time muted hidden"></p>
+      <div id="confirm-reasons" class="confirm-reasons hidden">
+        <p id="confirm-no-break-hint" class="muted hidden">今日尚未完成休息打卡，是否不休息直接下班？</p>
+        <label id="confirm-no-break-wrap" class="hidden">未休息原因
+          <textarea id="confirm-no-break-reason" rows="2" placeholder="例如：今日工作繁忙，未休息"></textarea>
+        </label>
+        <label id="confirm-early-wrap" class="hidden">提前下班原因
+          <textarea id="confirm-early-reason" rows="2" placeholder="例如：臨時有事"></textarea>
+        </label>
+      </div>
+      <div class="modal-actions">
+        <button type="button" id="confirm-cancel" class="btn ghost">取消</button>
+        <button type="button" id="confirm-ok" class="btn primary">確認打卡</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="idle-modal" class="modal hidden" aria-hidden="true">
+    <div class="modal-backdrop"></div>
+    <div class="modal-box" role="dialog" aria-modal="true">
+      <p class="modal-text">您已閒置，30秒後將自動登出。</p>
+      <div class="modal-actions">
+        <button type="button" id="idle-continue" class="btn primary">繼續使用</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="static/js/config.js?v=3"></script>
+  <script src="static/js/boot_assets.js?v=1"></script>
+  <script src="static/js/auth_session.js?v=9"></script>
+  <script src="static/js/app.js?v=11"></script>
+</body>
+</html>

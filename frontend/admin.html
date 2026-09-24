@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="theme-color" content="#0f4c5c" />
+  <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="stylesheet" href="static/css/app.css?v=10" />
+  <link rel="stylesheet" href="static/css/admin.css?v=7" />
+  <title>出勤打卡系統｜管理後台</title>
+</head>
+<body class="admin-body">
+  <aside class="sidebar">
+    <div class="brand">出勤打卡系統</div>
+    <nav id="nav">
+      <button data-page="dashboard" class="active">Dashboard</button>
+      <button data-page="employees">員工管理</button>
+      <button data-page="stores">店舖管理</button>
+      <button data-page="schedules">排班管理</button>
+      <button data-page="excel">Excel匯入</button>
+      <button data-page="today">今日出勤</button>
+      <button data-page="query">出勤查詢</button>
+      <button data-page="makeup">補打卡紀錄</button>
+      <button data-page="audit">操作紀錄</button>
+      <button data-page="reports">報表</button>
+      <button data-page="settings">系統設定</button>
+    </nav>
+    <a href="/" class="back" data-nav="home">← 返回打卡</a>
+  </aside>
+  <main class="main">
+    <header class="admin-top">
+      <h1 id="page-title">Dashboard</h1>
+      <div class="admin-top-right">
+        <div id="admin-user"></div>
+        <div id="idle-countdown" class="idle-countdown" aria-live="polite" hidden>
+          <span class="idle-countdown-icon">🕒</span>
+          <span class="idle-countdown-label">自動登出</span>
+          <span class="idle-countdown-time">03:00</span>
+        </div>
+      </div>
+    </header>
+    <div id="page" class="page"></div>
+  </main>
+
+  <div id="idle-modal" class="modal hidden" aria-hidden="true">
+    <div class="modal-backdrop"></div>
+    <div class="modal-box" role="dialog" aria-modal="true">
+      <p class="modal-text">您已閒置，30秒後將自動登出。</p>
+      <div class="modal-actions">
+        <button type="button" id="idle-continue" class="btn primary">繼續使用</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="static/js/config.js?v=3"></script>
+  <script src="static/js/boot_assets.js?v=1"></script>
+  <script src="static/js/auth_session.js?v=9"></script>
+  <script src="static/js/admin.js?v=8"></script>
+</body>
+</html>
