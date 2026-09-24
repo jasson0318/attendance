@@ -105,6 +105,42 @@ def test_requirements_include_windows_tzdata():
     assert "tzdata" in text
 
 
+def test_api_wrappers_send_ngrok_skip_header():
+    app_js = (FRONTEND / "static" / "js" / "app.js").read_text(encoding="utf-8")
+    admin_js = (FRONTEND / "static" / "js" / "admin.js").read_text(encoding="utf-8")
+    assert 'headers["ngrok-skip-browser-warning"] = "1"' in app_js
+    assert app_js.count('headers["ngrok-skip-browser-warning"] = "1"') == 1
+    assert "ngrok-skip-browser-warning" in admin_js
+    assert "unsealed-reword-playlist" not in app_js
+    assert "unsealed-reword-playlist" not in admin_js
+    assert "今日出勤資料載入失敗，請重新整理或稍後再試。" in app_js
+    assert "console.error" in app_js
+
+
+def test_cors_allows_ngrok_skip_header():
+    from fastapi.testclient import TestClient
+    from backend.app.main import app
+
+    client = TestClient(app)
+    response = client.options(
+        "/api/punch/today",
+        headers={
+            "Origin": "http://127.0.0.1:8800",
+            "Access-Control-Request-Method": "GET",
+            "Access-Control-Request-Headers": "authorization,content-type,ngrok-skip-browser-warning",
+        },
+    )
+    assert response.status_code in (200, 204)
+    allow_origin = response.headers.get("access-control-allow-origin", "")
+    allow_headers = response.headers.get("access-control-allow-headers", "").lower()
+    allow_methods = response.headers.get("access-control-allow-methods", "").upper()
+    assert allow_origin == "http://127.0.0.1:8800"
+    assert "ngrok-skip-browser-warning" in allow_headers
+    assert "GET" in allow_methods
+    text = (ROOT / "backend" / "app" / "main.py").read_text(encoding="utf-8")
+    assert "ngrok-skip-browser-warning" in text
+
+
 def test_health_endpoint():
     from fastapi.testclient import TestClient
     from backend.app.main import app

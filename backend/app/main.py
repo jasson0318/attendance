@@ -52,7 +52,7 @@ app.add_middleware(
     allow_origins=list(CORS_ORIGINS),
     allow_credentials=False,
     allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-    allow_headers=["Authorization", "Content-Type", "Accept"],
+    allow_headers=["Authorization", "Content-Type", "Accept", "ngrok-skip-browser-warning"],
 )
 
 Base.metadata.create_all(bind=engine)

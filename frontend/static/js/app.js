@@ -90,6 +90,7 @@ async function api(path, opts = {}) {
   const headers = opts.headers || {};
   if (!(opts.body instanceof FormData)) headers["Content-Type"] = "application/json";
   if (token()) headers["Authorization"] = `Bearer ${token()}`;
+  headers["ngrok-skip-browser-warning"] = "1";
   const url = (window.AttendanceConfig && AttendanceConfig.apiUrl)
     ? AttendanceConfig.apiUrl(path)
     : path;
@@ -250,7 +251,20 @@ function renderPunchButtons() {
 }
 
 async function loadToday() {
-  const data = await api("/api/punch/today");
+  let data;
+  try {
+    data = await api("/api/punch/today");
+  } catch (ex) {
+    console.error(ex);
+    const box = document.getElementById("schedule-box");
+    if (box) box.textContent = "今日出勤資料載入失敗，請重新整理或稍後再試。";
+    const msg = document.getElementById("punch-msg");
+    if (msg) {
+      msg.textContent = "今日出勤資料載入失敗，請重新整理或稍後再試。";
+      msg.className = "msg error";
+    }
+    return;
+  }
   todayData = data;
   document.getElementById("today-date").textContent = data.date;
   const box = document.getElementById("schedule-box");

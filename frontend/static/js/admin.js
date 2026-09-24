@@ -25,6 +25,7 @@ async function api(path, opts = {}) {
     if (opts.body && !headers["Content-Type"]) headers["Content-Type"] = "application/json";
   }
   if (token()) headers["Authorization"] = `Bearer ${token()}`;
+  headers["ngrok-skip-browser-warning"] = "1";
   const url = (window.AttendanceConfig && AttendanceConfig.apiUrl)
     ? AttendanceConfig.apiUrl(path)
     : path;
@@ -577,7 +578,12 @@ async function renderReports() {
     const full = (window.AttendanceConfig && AttendanceConfig.apiUrl)
       ? AttendanceConfig.apiUrl(url)
       : url;
-    const res = await fetch(full, { headers: { Authorization: `Bearer ${token()}` } });
+    const res = await fetch(full, {
+      headers: {
+        Authorization: `Bearer ${token()}`,
+        "ngrok-skip-browser-warning": "1",
+      },
+    });
     if (!res.ok) return alert("匯出失敗");
     const blob = await res.blob();
     const a = document.createElement("a");

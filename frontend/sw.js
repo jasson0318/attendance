@@ -1,4 +1,4 @@
-const CACHE = "attendance-v9";
+const CACHE = "attendance-v10";
 
 /** 由 sw.js 路徑推算 BASE_PATH（"" 或 "/attendance"） */
 function swBasePath() {
@@ -28,8 +28,8 @@ const ASSETS = [
   withBase("/static/js/config.js?v=3"),
   withBase("/static/js/boot_assets.js?v=1"),
   withBase("/static/js/auth_session.js?v=9"),
-  withBase("/static/js/app.js?v=11"),
-  withBase("/static/js/admin.js?v=8"),
+  withBase("/static/js/app.js?v=12"),
+  withBase("/static/js/admin.js?v=9"),
   withBase("/static/icons/icon-192.png"),
   withBase("/static/icons/icon-512.png"),
   withBase("/manifest.webmanifest"),
