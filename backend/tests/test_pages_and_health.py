@@ -75,6 +75,36 @@ def test_runtime_config_alias_supported():
     assert "ATTENDANCE_API_BASE" in wf
 
 
+def test_health_returns_200_when_timezone_data_missing(monkeypatch):
+    from zoneinfo import ZoneInfoNotFoundError
+
+    from fastapi.testclient import TestClient
+
+    from backend.app import main
+
+    def missing_tz():
+        raise ZoneInfoNotFoundError("Asia/Taipei")
+
+    monkeypatch.setattr(main, "now_local", missing_tz)
+    client = TestClient(main.app, raise_server_exceptions=False)
+    response = client.get("/health")
+    assert response.status_code == 200
+    body = response.json()
+    assert body.get("status") == "ok"
+    assert body.get("service") == "attendance"
+    assert "timestamp" in body
+    text = response.text
+    assert "SECRET" not in text
+    assert "sqlite" not in text.lower()
+    assert "password" not in text.lower()
+    assert client.get("/api/health").status_code == 200
+
+
+def test_requirements_include_windows_tzdata():
+    text = (ROOT / "requirements.txt").read_text(encoding="utf-8")
+    assert "tzdata" in text
+
+
 def test_health_endpoint():
     from fastapi.testclient import TestClient
     from backend.app.main import app

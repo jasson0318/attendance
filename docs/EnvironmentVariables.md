@@ -11,7 +11,7 @@
 | `CORS_ORIGINS` | 正式建議設定 | `http://127.0.0.1:8800,http://localhost:8800` | 瀏覽器來源。正式改為 `https://<github-account>.github.io`。**禁止 `*`**。ngrok 網域不是頁面 Origin。 |
 | `ACCESS_TOKEN_EXPIRE_MINUTES` | 否 | `10080` | JWT `exp`。 |
 | `IDLE_TIMEOUT_MINUTES` | 否 | `3` | 前後端閒置逾時。 |
-| `APP_TIMEZONE` | 否 | `Asia/Taipei` | 業務時區。 |
+| `APP_TIMEZONE` | 否 | `Asia/Taipei` | 業務時區。Windows 需要套件 `tzdata`（已列入 requirements.txt），否則 `ZoneInfo` 會失敗。 |
 | `HOST` | 否 | `0.0.0.0` | bind。 |
 | `PORT` | 否 | `8800` | 本機與 24 小時電腦用 8800。 |
 | `PREVIEW_STORE` | 否 | `memory` | 目前單機用 `memory`。 |

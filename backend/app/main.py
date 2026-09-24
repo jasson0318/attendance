@@ -1,6 +1,9 @@
 """出勤打卡系統 - FastAPI 主程式"""
+from datetime import datetime, timezone
 from pathlib import Path
 import logging
+
+from zoneinfo import ZoneInfoNotFoundError
 
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
@@ -116,6 +119,15 @@ def service_worker():
     return FileResponse(path, media_type="application/javascript")
 
 
+def _health_timestamp() -> str:
+    """健康檢查不應因 Windows 缺少 IANA tzdata 而整段 500。"""
+    try:
+        return now_local().isoformat()
+    except ZoneInfoNotFoundError:
+        logger.warning("health check: timezone data unavailable, using UTC timestamp")
+        return datetime.now(timezone.utc).isoformat()
+
+
 @app.get("/api/health")
 @app.get("/health")
 def health():
@@ -124,7 +136,7 @@ def health():
         "service": "attendance",
         "timezone": APP_TIMEZONE,
         "idle_timeout_minutes": IDLE_TIMEOUT_MINUTES,
-        "timestamp": now_local().isoformat(),
+        "timestamp": _health_timestamp(),
     }
 
 
